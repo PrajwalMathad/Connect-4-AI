@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class ConnectFour:
@@ -204,7 +205,8 @@ class MonteCarloTreeNode:
 
 def monte_carlo_tree_search(root_state, iterations, epochs):
     root = MonteCarloTreeNode(root_state)
-
+    win_rates = []
+    avg_depths = []
     for _ in range(epochs):
         total_depth = 0
         ai_wins = 0
@@ -235,6 +237,11 @@ def monte_carlo_tree_search(root_state, iterations, epochs):
                         new_state.board, new_state.player = (
                             state.get_state()
                         )  # Set board and player
+
+                        # scores = heuristic(new_state.board, new_state.player)
+                        # valid_moves = new_state.get_valid_moves()
+                        # selected_move = max(valid_moves, key=lambda x: scores[x])
+                        # new_state.make_move(selected_move)
                         new_state.make_move(random_move)  # Make the random move
                         node = node.add_child(new_state)
                         state = new_state
@@ -277,13 +284,18 @@ def monte_carlo_tree_search(root_state, iterations, epochs):
                 if sim_game.player == 1:
                     # Player 1 selects moves using the heuristic
                     # print("Player 1 move")
-                    scores = heuristic(sim_game.board, sim_game.player)
-                    valid_moves = sim_game.get_valid_moves()
-                    selected_move = max(valid_moves, key=lambda x: scores[x])
-                    sim_game.make_move(selected_move)
+                    sim_game.play_random_move()
+                    # scores = heuristic(sim_game.board, sim_game.player)
+                    # valid_moves = sim_game.get_valid_moves()
+                    # selected_move = max(valid_moves, key=lambda x: scores[x])
+                    # sim_game.make_move(selected_move)
                 else:
                     # print("Player 2 move")
                     sim_game.play_random_move()
+                    # scores = heuristic(sim_game.board, sim_game.player)
+                    # valid_moves = sim_game.get_valid_moves()
+                    # selected_move = max(valid_moves, key=lambda x: scores[x])
+                    # sim_game.make_move(selected_move)
                 depth += 1
 
             # Backpropagation
@@ -303,21 +315,41 @@ def monte_carlo_tree_search(root_state, iterations, epochs):
                 node = node.parent
 
             total_depth += depth
-            print(
-                "Winner of game", i, " ", winner, "random calls", sim_game.random_calls
-            )
-            print(sim_game.board)
+            # print(
+            #     "Winner of game", i, " ", winner, "random calls", sim_game.random_calls
+            # )
+            # print(sim_game.board)
 
         average_depth = total_depth / iterations
         win_rate = (ai_wins / iterations) * 100
+        win_rates.append(win_rate)
+        avg_depths.append(average_depth)
         print("Average depth", average_depth)
         print("Win rate", win_rate)
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.plot(range(1, epochs + 1), win_rates, marker="o")
+    plt.title("Win Rate Over Epochs")
+    plt.xlabel("Epochs")
+    plt.ylabel("Win Rate (%)")
+    plt.grid(True)
+
+    # Plot average depths
+    plt.subplot(1, 2, 2)
+    plt.plot(range(1, epochs + 1), avg_depths, marker="o", color="orange")
+    plt.title("Average Depth Over Epochs")
+    plt.xlabel("Epochs")
+    plt.ylabel("Average Depth")
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == "__main__":
     game = ConnectFour()
     # game.print_board()
-    monte_carlo_tree_search(game, 150, 1)
+    monte_carlo_tree_search(game, 20, 10)
 
     # while not game.is_winner(1) and not game.is_winner(2) and not game.is_board_full():
     #     if game.player == 1:
